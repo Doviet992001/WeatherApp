@@ -1,0 +1,73 @@
+import {View, ImageBackground, Text} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {images} from '../constants';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import {deviceHeight, deviceWidth} from './Dimensions';
+import {API_KEY} from './Constants';
+
+export default function Details(props) {
+  const [data, setData] = useState();
+  const {name} = props.route.params;
+
+  useEffect(() => {
+    fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=${name}&appid=${API_KEY}`,
+    )
+      .then(res => res.json())
+      .then(res => setData(res))
+      .catch(err => console.log(err));
+  }, []);
+
+  const Data = ({title, value}) => (
+    <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+      <Text style={{color: 'white', fontSize: 22}}>{title}</Text>
+      <Text style={{color: 'white', fontSize: 22}}>{value}</Text>
+    </View>
+  );
+  return (
+    <View>
+      <ImageBackground
+        source={images.backgroundImg}
+        style={{
+          height: deviceHeight,
+          width: deviceWidth,
+        }}
+        imageStyle={{opacity: 0.6, backgroundColor: 'black'}}
+      />
+      <View className="absolute w-full">
+        <View className="px-4 py-2 flex-row justify-between items-center">
+          <Icon name="bars" size={46} color="white" />
+          <Icon name="user" size={46} color="white" />
+        </View>
+        {data ? (
+          <View
+            style={{
+              flexDirection: 'column',
+              justifyContent: 'space-evenly',
+              alignItems: 'center',
+              height: deviceHeight - 100,
+            }}>
+            <View>
+              <Text style={{color: 'white', fontSize: 40}}>{name}</Text>
+              <Text style={{fontSize: 16, color: 'white', textAlign: 'center'}}>
+                {data['weather'][0]['main']}
+              </Text>
+            </View>
+            <Text style={{color: 'white', fontSize: 64}}>
+              {(data['main']['temp'] - 273).toFixed(2)}&deg; C
+            </Text>
+            <Text style={{color: 'white', fontSize: 22, marginBottom: 16}}>Weather Detauks</Text>
+            <View>
+              <View style={{width: deviceWidth - 60}}>
+                <Data value={data['wind']['speed']} title="Wind" />
+                <Data value={data['main']['pressure']} title="Pressure" />
+                <Data value={`${data['main']['humidity']}%`} title="Humidity" />
+                <Data value={data['visibility']} title="Visibility" />
+              </View>
+            </View>
+          </View>
+        ) : null}
+      </View>
+    </View>
+  );
+}
